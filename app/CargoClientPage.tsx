@@ -20,15 +20,15 @@ export default function CargoClientPage({
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<SortOption>('default'); // 정렬 상태 (등록순, ABC순, 카테고리순)
+  const [sortBy, setSortBy] = useState<SortOption>('default');
   
-  // 카테고리/도시 더보기 접기 상태
+  // 더보기 버튼 상태 관리
   const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
   const [showAllLocations, setShowAllLocations] = useState<boolean>(false);
 
   const [hoveredAgencyUrl, setHoveredAgencyUrl] = useState<string | null>(null);
 
-  // 헤더 상태 관리 (스크롤에 따른 높이 변화)
+  // 헤더 상태 관리
   const [headerHeight, setHeaderHeight] = useState<number>(120);
   const [barStyle, setBarStyle] = useState<React.CSSProperties>({});
 
@@ -75,7 +75,7 @@ export default function CargoClientPage({
     updateBarPosition();
   }, [headerHeight]);
 
-  // 1. 카테고리별 카운팅 계산 및 개수 내림차순 정렬
+  // 1. 카테고리별 수량 및 내림차순 정렬 (많은 카테고리 우선)
   const categoriesWithCount = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
@@ -85,13 +85,13 @@ export default function CargoClientPage({
     });
 
     const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 개수 많은 순 정렬
+      .sort((a, b) => b[1] - a[1]) // 수량이 많은 순서대로 내림차순
       .map(([name, count]) => ({ name, count }));
 
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
-  // 2. 도시별 카운팅 계산 및 개수 내림차순 정렬
+  // 2. 국가/도시(Location)별 수량 및 내림차순 정렬 (많은 국가 우선)
   const locationsWithCount = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
@@ -101,28 +101,27 @@ export default function CargoClientPage({
     });
 
     const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 개수 많은 순 정렬
+      .sort((a, b) => b[1] - a[1]) // 수량이 많은 순서대로 내림차순
       .map(([name, count]) => ({ name, count }));
 
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
-  // 상위 10개 필터 노출 로직 (ALL 제외 상위 10개)
+  // 상위 10개 및 더보기 슬라이스
   const visibleCategories = useMemo(() => {
     if (showAllCategories) return categoriesWithCount;
-    return categoriesWithCount.slice(0, 11); // ALL + 상위 10개
+    return categoriesWithCount.slice(0, 11);
   }, [categoriesWithCount, showAllCategories]);
 
   const visibleLocations = useMemo(() => {
     if (showAllLocations) return locationsWithCount;
-    return locationsWithCount.slice(0, 11); // ALL + 상위 10개
+    return locationsWithCount.slice(0, 11);
   }, [locationsWithCount, showAllLocations]);
 
-  // 3. 필터링 및 정렬 처리
+  // 필터링 및 정렬 처리
   const filteredAgencies = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    // 필터링
     const result = initialAgencies.filter((agency) => {
       const matchCat =
         selectedCategory === 'ALL' || agency.category?.includes(selectedCategory);
@@ -139,7 +138,6 @@ export default function CargoClientPage({
       return matchCat && matchLoc && matchSearch;
     });
 
-    // 정렬
     return result.sort((a, b) => {
       if (sortBy === 'abc') {
         return a.name.localeCompare(b.name);
@@ -149,7 +147,7 @@ export default function CargoClientPage({
         const catB = b.category?.[0] || '';
         return catA.localeCompare(catB);
       }
-      return 0; // 등록순 (기본)
+      return 0; // NEWEST (기본 등록순)
     });
   }, [initialAgencies, selectedCategory, selectedLocation, searchQuery, sortBy]);
 
@@ -226,42 +224,41 @@ export default function CargoClientPage({
             )}
           </div>
 
-          {/* INDEX 수량 및 정렬 필터 옵션 */}
+          {/* INDEX 수량 및 영문 정렬 필터 (NEWEST, NAME, TYPE) */}
           <div className="text-xs font-mono text-neutral-500 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span>INDEX ({filteredAgencies.length})</span>
             
-            {/* 정렬(Sort) 버튼 그룹 */}
-            <div className="flex items-center gap-2">
-              <span className="text-neutral-600 mr-1">SORT:</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-neutral-600 mr-1 uppercase">SORT:</span>
               <button
                 onClick={() => setSortBy('default')}
-                className={`px-2.5 py-1 rounded transition-colors ${
+                className={`px-2.5 py-1 rounded transition-colors uppercase ${
                   sortBy === 'default'
                     ? 'bg-[#0c9f5a] text-white font-bold'
                     : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
                 }`}
               >
-                등록순
+                NEWEST
               </button>
               <button
                 onClick={() => setSortBy('abc')}
-                className={`px-2.5 py-1 rounded transition-colors ${
+                className={`px-2.5 py-1 rounded transition-colors uppercase ${
                   sortBy === 'abc'
                     ? 'bg-[#0c9f5a] text-white font-bold'
                     : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
                 }`}
               >
-                ABC순
+                NAME
               </button>
               <button
                 onClick={() => setSortBy('category')}
-                className={`px-2.5 py-1 rounded transition-colors ${
+                className={`px-2.5 py-1 rounded transition-colors uppercase ${
                   sortBy === 'category'
                     ? 'bg-[#0c9f5a] text-white font-bold'
                     : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
                 }`}
               >
-                카테고리순
+                TYPE
               </button>
             </div>
           </div>
@@ -329,7 +326,8 @@ export default function CargoClientPage({
         {/* 필터 사이드바 */}
         <aside className="w-full lg:w-80 shrink-0">
           <div className="lg:sticky lg:top-36 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
-            {/* 카테고리 필터 영역 */}
+            
+            {/* 1. 카테고리 필터 (많은 수 순서 정렬) */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // CATEGORIES
@@ -351,7 +349,6 @@ export default function CargoClientPage({
                 ))}
               </div>
 
-              {/* 10개 이상일 경우 더보기 버튼 */}
               {categoriesWithCount.length > 11 && (
                 <button
                   onClick={() => setShowAllCategories(!showAllCategories)}
@@ -364,7 +361,7 @@ export default function CargoClientPage({
               )}
             </div>
 
-            {/* 도시(Location) 필터 영역 */}
+            {/* 2. 국가/도시 필터 (Location, 많은 수 순서 정렬) */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // LOCATION
@@ -386,7 +383,6 @@ export default function CargoClientPage({
                 ))}
               </div>
 
-              {/* 10개 이상일 경우 더보기 버튼 */}
               {locationsWithCount.length > 11 && (
                 <button
                   onClick={() => setShowAllLocations(!showAllLocations)}
@@ -399,7 +395,7 @@ export default function CargoClientPage({
               )}
             </div>
 
-            {/* 전체 초기화 버튼 */}
+            {/* 필터 전체 초기화 */}
             {(selectedCategory !== 'ALL' ||
               selectedLocation !== 'ALL' ||
               searchQuery !== '' ||
