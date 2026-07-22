@@ -104,11 +104,23 @@ export async function getAgencies(): Promise<Agency[]> {
       const locationCode = rawLocation.trim().toUpperCase();
       const location = LOCATION_MAP[locationCode] || locationCode;
 
-      // 5. Recommendation (Checkbox)
-      const recommendation =
-        props['Recommendation']?.checkbox ??
-        props['Recommended']?.checkbox ??
-        false;
+      // 5. Recommendation (Checkbox / Formula / Select 지원)
+      const recProp =
+        props['Recommendation'] ||
+        props['Recommended'] ||
+        props['추천'];
+
+      let recommendation = false;
+
+      if (recProp) {
+        if (recProp.type === 'checkbox') {
+          recommendation = recProp.checkbox ?? false;
+        } else if (recProp.type === 'formula') {
+          recommendation = recProp.formula?.boolean ?? false;
+        } else if (recProp.type === 'select') {
+          recommendation = !!recProp.select?.name;
+        }
+      }
 
       return {
         id: page.id,

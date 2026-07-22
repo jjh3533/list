@@ -325,14 +325,16 @@ export default function CargoClientPage({
                         href={targetUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-title font-medium text-2xl tracking-[0em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
+                        className="font-title font-medium text-2xl tracking-[0em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2.5"
                       >
-                        {agency.recommendation && (
-                          <span className="text-[#0c9f5a] text-xl font-bold select-none">
-                            ⦁
-                          </span>
+                        {/* Recommendation 체크되어 있을 시 초록 원형 배지 표시 */}
+                        {Boolean(agency.recommendation) && (
+                          <span 
+                            className="inline-block w-2.5 h-2.5 rounded-full bg-[#0c9f5a] shrink-0" 
+                            title="Recommended Agency"
+                          />
                         )}
-                        {agency.name}
+                        <span>{agency.name}</span>
                         <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity font-normal">
                           ↗
                         </span>
