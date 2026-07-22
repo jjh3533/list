@@ -10,6 +10,8 @@ export interface Agency {
   location: string;
 }
 
+type SortOption = 'default' | 'abc' | 'category';
+
 export default function CargoClientPage({
   initialAgencies = [],
 }: {
@@ -18,6 +20,12 @@ export default function CargoClientPage({
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [sortBy, setSortBy] = useState<SortOption>('default'); // 정렬 상태 (등록순, ABC순, 카테고리순)
+  
+  // 카테고리/도시 더보기 접기 상태
+  const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
+  const [showAllLocations, setShowAllLocations] = useState<boolean>(false);
+
   const [hoveredAgencyUrl, setHoveredAgencyUrl] = useState<string | null>(null);
 
   // 헤더 상태 관리 (스크롤에 따른 높이 변화)
@@ -27,7 +35,6 @@ export default function CargoClientPage({
   const headerRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
 
-  // 스크롤 및 리사이즈 이벤트 처리
   useEffect(() => {
     const handleScroll = () => {
       const newHeight = window.scrollY > 100 ? 80 : 120;
@@ -43,7 +50,6 @@ export default function CargoClientPage({
     };
   }, [headerHeight]);
 
-  // 상단 Accent Bar 위치 및 너비 업데이트
   const updateBarPosition = () => {
     const header = headerRef.current;
     const logo = logoRef.current;
@@ -69,20 +75,55 @@ export default function CargoClientPage({
     updateBarPosition();
   }, [headerHeight]);
 
-  const categories = useMemo(() => {
-    const all = initialAgencies.flatMap((a) => a.category || []);
-    return ['ALL', ...Array.from(new Set(all))];
+  // 1. 카테고리별 카운팅 계산 및 개수 내림차순 정렬
+  const categoriesWithCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    initialAgencies.forEach((a) => {
+      a.category?.forEach((cat) => {
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+    });
+
+    const sortedList = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1]) // 개수 많은 순 정렬
+      .map(([name, count]) => ({ name, count }));
+
+    return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
-  const locations = useMemo(() => {
-    const all = initialAgencies.map((a) => a.location).filter(Boolean);
-    return ['ALL', ...Array.from(new Set(all))];
+  // 2. 도시별 카운팅 계산 및 개수 내림차순 정렬
+  const locationsWithCount = useMemo(() => {
+    const counts: Record<string, number> = {};
+    initialAgencies.forEach((a) => {
+      if (a.location) {
+        counts[a.location] = (counts[a.location] || 0) + 1;
+      }
+    });
+
+    const sortedList = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1]) // 개수 많은 순 정렬
+      .map(([name, count]) => ({ name, count }));
+
+    return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
+  // 상위 10개 필터 노출 로직 (ALL 제외 상위 10개)
+  const visibleCategories = useMemo(() => {
+    if (showAllCategories) return categoriesWithCount;
+    return categoriesWithCount.slice(0, 11); // ALL + 상위 10개
+  }, [categoriesWithCount, showAllCategories]);
+
+  const visibleLocations = useMemo(() => {
+    if (showAllLocations) return locationsWithCount;
+    return locationsWithCount.slice(0, 11); // ALL + 상위 10개
+  }, [locationsWithCount, showAllLocations]);
+
+  // 3. 필터링 및 정렬 처리
   const filteredAgencies = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
-    return initialAgencies.filter((agency) => {
+    // 필터링
+    const result = initialAgencies.filter((agency) => {
       const matchCat =
         selectedCategory === 'ALL' || agency.category?.includes(selectedCategory);
       const matchLoc =
@@ -97,9 +138,21 @@ export default function CargoClientPage({
 
       return matchCat && matchLoc && matchSearch;
     });
-  }, [initialAgencies, selectedCategory, selectedLocation, searchQuery]);
 
-  // 로고 애니메이션 변환 스타일
+    // 정렬
+    return result.sort((a, b) => {
+      if (sortBy === 'abc') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'category') {
+        const catA = a.category?.[0] || '';
+        const catB = b.category?.[0] || '';
+        return catA.localeCompare(catB);
+      }
+      return 0; // 등록순 (기본)
+    });
+  }, [initialAgencies, selectedCategory, selectedLocation, searchQuery, sortBy]);
+
   const jeonTransform =
     headerHeight === 80
       ? 'translateY(-36px) translateX(75px)'
@@ -108,18 +161,16 @@ export default function CargoClientPage({
   return (
     <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
       
-      {/* 고정 동적 헤더 (모바일/태블릿에서는 hidden, 데스크톱 lg: 이상에서만 flex) */}
+      {/* 고정 동적 헤더 */}
       <header
         ref={headerRef}
         style={{ height: `${headerHeight}px` }}
         className="hidden lg:flex fixed top-0 left-0 right-0 bg-black px-10 flex-col justify-between items-start z-[1000] transition-[height] duration-300 ease-in-out border-b border-[#202d32]"
       >
-        {/* 상단 슬라이딩 포인트 바 */}
         <div className="w-full h-[10px] absolute top-0 left-0 right-0">
           <div style={barStyle} />
         </div>
 
-        {/* 로고 영역 (Polymath 900 서체 적용) */}
         <div className="flex items-center w-full py-5">
           <a
             ref={logoRef}
@@ -141,7 +192,7 @@ export default function CargoClientPage({
         </div>
       </header>
 
-      {/* 메인 컨텐츠 영역 (모바일/태블릿은 pt-6, 데스크톱은 pt-[140px]) */}
+      {/* 메인 컨텐츠 영역 */}
       <div className="pt-6 lg:pt-[140px] max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
         <main className="flex-1">
           <header className="mb-8 border-b border-[#202d32] pb-8">
@@ -175,9 +226,44 @@ export default function CargoClientPage({
             )}
           </div>
 
-          <div className="text-xs font-mono text-neutral-500 mb-4 flex justify-between">
+          {/* INDEX 수량 및 정렬 필터 옵션 */}
+          <div className="text-xs font-mono text-neutral-500 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span>INDEX ({filteredAgencies.length})</span>
-            <span>LOCATION</span>
+            
+            {/* 정렬(Sort) 버튼 그룹 */}
+            <div className="flex items-center gap-2">
+              <span className="text-neutral-600 mr-1">SORT:</span>
+              <button
+                onClick={() => setSortBy('default')}
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  sortBy === 'default'
+                    ? 'bg-[#0c9f5a] text-white font-bold'
+                    : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
+                }`}
+              >
+                등록순
+              </button>
+              <button
+                onClick={() => setSortBy('abc')}
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  sortBy === 'abc'
+                    ? 'bg-[#0c9f5a] text-white font-bold'
+                    : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
+                }`}
+              >
+                ABC순
+              </button>
+              <button
+                onClick={() => setSortBy('category')}
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  sortBy === 'category'
+                    ? 'bg-[#0c9f5a] text-white font-bold'
+                    : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
+                }`}
+              >
+                카테고리순
+              </button>
+            </div>
           </div>
 
           <div className="border-t border-[#202d32] divide-y divide-[#202d32]/60">
@@ -240,60 +326,90 @@ export default function CargoClientPage({
           </div>
         </main>
 
-        <aside className="w-full lg:w-72 shrink-0">
+        {/* 필터 사이드바 */}
+        <aside className="w-full lg:w-80 shrink-0">
           <div className="lg:sticky lg:top-36 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
+            {/* 카테고리 필터 영역 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // CATEGORIES
               </h3>
               <div className="flex flex-col gap-1">
-                {categories.map((cat) => (
+                {visibleCategories.map((item) => (
                   <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    key={item.name}
+                    onClick={() => setSelectedCategory(item.name)}
                     className={`text-left text-xs font-mono py-1.5 px-3 rounded-lg transition-all flex justify-between items-center ${
-                      selectedCategory === cat
+                      selectedCategory === item.name
                         ? 'bg-white text-black font-bold'
                         : 'text-neutral-400 hover:text-white hover:bg-[#202d32]/50'
                     }`}
                   >
-                    <span>{cat}</span>
-                    {selectedCategory === cat && <span className="text-[10px]">●</span>}
+                    <span>{item.name}</span>
+                    <span className="text-[11px] opacity-70">({item.count})</span>
                   </button>
                 ))}
               </div>
+
+              {/* 10개 이상일 경우 더보기 버튼 */}
+              {categoriesWithCount.length > 11 && (
+                <button
+                  onClick={() => setShowAllCategories(!showAllCategories)}
+                  className="mt-3 text-[11px] font-mono text-[#0c9f5a] hover:underline block w-full text-left px-3"
+                >
+                  {showAllCategories
+                    ? '– Show Top 10'
+                    : `+ More Categories (${categoriesWithCount.length - 11})`}
+                </button>
+              )}
             </div>
 
+            {/* 도시(Location) 필터 영역 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // LOCATION
               </h3>
               <div className="flex flex-col gap-1">
-                {locations.map((loc) => (
+                {visibleLocations.map((item) => (
                   <button
-                    key={loc}
-                    onClick={() => setSelectedLocation(loc)}
+                    key={item.name}
+                    onClick={() => setSelectedLocation(item.name)}
                     className={`text-left text-xs font-mono py-1.5 px-3 rounded-lg transition-all flex justify-between items-center ${
-                      selectedLocation === loc
+                      selectedLocation === item.name
                         ? 'bg-[#0c9f5a] text-white font-bold'
                         : 'text-neutral-400 hover:text-white hover:bg-[#202d32]/50'
                     }`}
                   >
-                    <span>{loc}</span>
-                    {selectedLocation === loc && <span className="text-[10px]">●</span>}
+                    <span>{item.name}</span>
+                    <span className="text-[11px] opacity-70">({item.count})</span>
                   </button>
                 ))}
               </div>
+
+              {/* 10개 이상일 경우 더보기 버튼 */}
+              {locationsWithCount.length > 11 && (
+                <button
+                  onClick={() => setShowAllLocations(!showAllLocations)}
+                  className="mt-3 text-[11px] font-mono text-[#0c9f5a] hover:underline block w-full text-left px-3"
+                >
+                  {showAllLocations
+                    ? '– Show Top 10'
+                    : `+ More Locations (${locationsWithCount.length - 11})`}
+                </button>
+              )}
             </div>
 
+            {/* 전체 초기화 버튼 */}
             {(selectedCategory !== 'ALL' ||
               selectedLocation !== 'ALL' ||
-              searchQuery !== '') && (
+              searchQuery !== '' ||
+              sortBy !== 'default') && (
               <button
                 onClick={() => {
                   setSelectedCategory('ALL');
                   setSelectedLocation('ALL');
                   setSearchQuery('');
+                  setSortBy('default');
                 }}
                 className="w-full text-center text-xs font-mono text-neutral-500 hover:text-white underline pt-2 block"
               >
