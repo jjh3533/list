@@ -46,10 +46,12 @@ export default function CargoClientPage({
         {/* 메인 리스트 */}
         <main className="flex-1">
           <header className="mb-12 border-b border-[#202d32] pb-8">
-            <h1 className="font-title font-medium text-6xl sm:text-8xl tracking-tighter uppercase mb-4 text-[#0c9f5a]">
+            {/* 1. 메인 타이틀: 900 서체 (font-black) 적용 */}
+            <h1 className="font-title font-black text-6xl sm:text-8xl tracking-tighter uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
-            <p className="font-title font-medium text-neutral-400 text-sm max-w-xl leading-relaxed">
+            {/* 2. 타이틀 설명: 텍스트 2배 (text-2xl), 자간 0.1em (tracking-[0.1em]) 적용 */}
+            <p className="font-title font-medium text-neutral-400 text-2xl tracking-[0.1em] max-w-2xl leading-relaxed">
               Archived index of curated agency partners.
             </p>
           </header>
@@ -81,7 +83,8 @@ export default function CargoClientPage({
                       href={targetUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-title font-medium text-xl text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
+                      {/* 3. 에이전시 이름: 크기 키움 (text-2xl), 자간 0.1em (tracking-[0.1em]) 적용 */}
+                      className="font-title font-medium text-2xl tracking-[0.1em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                     >
                       {agency.name}
                       <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity font-normal">
