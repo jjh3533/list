@@ -116,15 +116,16 @@ export default function CargoClientPage({
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [locationCounts, initialAgencies.length]);
 
-  // 상위 10개 추출
+  // 카테고리 상위 10개 노출
   const visibleCategories = useMemo(() => {
     if (showAllCategories) return categoriesWithCount;
     return categoriesWithCount.slice(0, 11);
   }, [categoriesWithCount, showAllCategories]);
 
+  // Location 상위 5개 노출 (ALL + 상위 5개 = 6개)
   const visibleLocations = useMemo(() => {
     if (showAllLocations) return locationsWithCount;
-    return locationsWithCount.slice(0, 11);
+    return locationsWithCount.slice(0, 6);
   }, [locationsWithCount, showAllLocations]);
 
   // 메인 리스트 필터링 및 수량 기준 정렬 처리
@@ -327,7 +328,6 @@ export default function CargoClientPage({
                         rel="noreferrer"
                         className="font-title font-medium text-2xl tracking-[0em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2.5"
                       >
-                        {/* Recommendation 체크박스가 true일 때 확실한 초록 도트 표시 */}
                         {agency.recommendation === true && (
                           <span 
                             className="inline-block w-2.5 h-2.5 rounded-full bg-[#0c9f5a] shrink-0" 
@@ -369,9 +369,9 @@ export default function CargoClientPage({
           </div>
         </main>
 
-        {/* 필터 사이드바 */}
+        {/* 필터 사이드바 (sticky 제거 및 스크롤 연동) */}
         <aside className="w-full lg:w-80 shrink-0">
-          <div className="lg:sticky lg:top-36 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
+          <div className="space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
             
             {/* 1. 카테고리 필터 */}
             <div>
@@ -407,7 +407,7 @@ export default function CargoClientPage({
               )}
             </div>
 
-            {/* 2. 국가/도시 필터 */}
+            {/* 2. 국가/도시 필터 (상위 5개 기본 노출) */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // LOCATION
@@ -429,14 +429,14 @@ export default function CargoClientPage({
                 ))}
               </div>
 
-              {locationsWithCount.length > 11 && (
+              {locationsWithCount.length > 6 && (
                 <button
                   onClick={() => setShowAllLocations(!showAllLocations)}
                   className="mt-3 text-[11px] font-mono text-[#0c9f5a] hover:underline block w-full text-left px-3"
                 >
                   {showAllLocations
-                    ? '– Show Top 10'
-                    : `+ More Locations (${locationsWithCount.length - 11})`}
+                    ? '– Show Top 5'
+                    : `+ More Locations (${locationsWithCount.length - 6})`}
                 </button>
               )}
             </div>
