@@ -104,21 +104,20 @@ export async function getAgencies(): Promise<Agency[]> {
       const locationCode = rawLocation.trim().toUpperCase();
       const location = LOCATION_MAP[locationCode] || locationCode;
 
-      // 5. Recommendation (Checkbox / Formula / Select 지원)
-      const recProp =
-        props['Recommendation'] ||
-        props['Recommended'] ||
-        props['추천'];
-
+      // 5. Recommendation 파싱 (컬럼 이름이 빈칸이어도 type이 checkbox인 속성을 자동 검색)
       let recommendation = false;
-
-      if (recProp) {
-        if (recProp.type === 'checkbox') {
-          recommendation = recProp.checkbox ?? false;
-        } else if (recProp.type === 'formula') {
-          recommendation = recProp.formula?.boolean ?? false;
-        } else if (recProp.type === 'select') {
-          recommendation = !!recProp.select?.name;
+      
+      // 먼저 지정된 이름 검색
+      const namedProp = props['Recommendation'] || props['Recommended'] || props['추천'];
+      if (namedProp && namedProp.type === 'checkbox') {
+        recommendation = namedProp.checkbox ?? false;
+      } else {
+        // 이름이 빈칸이거나 일치하는 게 없으면 properties 전체 중 첫 번째 checkbox 타입 탐색
+        const checkboxKey = Object.keys(props).find(
+          (key) => props[key]?.type === 'checkbox'
+        );
+        if (checkboxKey) {
+          recommendation = props[checkboxKey].checkbox ?? false;
         }
       }
 
