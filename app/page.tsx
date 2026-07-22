@@ -11,6 +11,7 @@ const COUNTRY_MAP: Record<string, string> = {
   DE: 'Germany',
   US: 'United States',
   GB: 'England',
+  UK: 'England',
   FR: 'France',
   JP: 'Japan',
   CN: 'China',
@@ -42,7 +43,7 @@ async function getAgencies() {
     let hasMore = true;
     let nextCursor: string | null = null;
 
-    // 248개 이상의 전 데이터를 가져오는 안전한 Loop
+    // 전체 데이터를 가져오는 Loop
     while (hasMore) {
       const queryParams: any = {
         database_id: databaseId.replace(/-/g, ''),
@@ -103,12 +104,36 @@ async function getAgencies() {
         rawLocation = rawLocation.trim().toUpperCase();
         const location = COUNTRY_MAP[rawLocation] || rawLocation || 'Global';
 
+        // 5. Recommendation (추천) 체크박스 추출 [추가된 핵심!]
+        let recommendation = false;
+        const recKey = Object.keys(props).find(
+          (key) => key.trim().toLowerCase() === 'recommendation'
+        );
+
+        if (recKey && props[recKey]) {
+          const prop = props[recKey];
+          if (prop.type === 'checkbox') {
+            recommendation = prop.checkbox ?? false;
+          } else if (prop.type === 'formula') {
+            recommendation = prop.formula?.boolean ?? false;
+          }
+        } else {
+          // 속성명을 못 찾을 경우 첫 번째 checkbox 속성 탐색
+          const fallbackKey = Object.keys(props).find(
+            (key) => props[key]?.type === 'checkbox'
+          );
+          if (fallbackKey) {
+            recommendation = props[fallbackKey].checkbox ?? false;
+          }
+        }
+
         return {
           id: page.id,
           name,
           url,
           category,
           location,
+          recommendation, // 반환 객체에 추가
         };
       })
       .filter(Boolean);
@@ -118,7 +143,8 @@ async function getAgencies() {
   }
 }
 
-export const revalidate = 10;
+// 즉시 반영을 위한 캐시 무효화 (0초)
+export const revalidate = 0;
 
 export default async function Page() {
   const agencies = await getAgencies();

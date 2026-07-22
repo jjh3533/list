@@ -6,9 +6,10 @@ const notion = new Client({
 
 // 국가 코드 매핑
 const LOCATION_MAP: Record<string, string> = {
+  GB: 'ENGLAND',
+  UK: 'ENGLAND',
   KR: 'KOREA',
   US: 'USA',
-  GB: 'UK',
   DE: 'GERMANY',
   FR: 'FRANCE',
   JP: 'JAPAN',
@@ -83,7 +84,7 @@ export async function getAgencies(): Promise<Agency[]> {
         url = `https://${url}`;
       }
 
-      // 3. 카테고리 (Category) - Multi-select 또는 Rich Text 지원
+      // 3. 카테고리 (Category)
       let category: string[] = [];
       if (props['Category']?.multi_select) {
         category = props['Category'].multi_select.map((c: any) => c.name);
@@ -102,22 +103,30 @@ export async function getAgencies(): Promise<Agency[]> {
         props['Location']?.rich_text[0]?.plain_text ||
         'GLOBAL';
       const locationCode = rawLocation.trim().toUpperCase();
-      const location = LOCATION_MAP[locationCode] || locationCode;
+      const location = LOCATION_MAP[locationCode] || rawLocation;
 
-      // 5. Recommendation 파싱 (컬럼 이름이 빈칸이어도 type이 checkbox인 속성을 자동 검색)
+      // 5. Recommendation (대소문자/속성 검색 완전 방어 로직)
       let recommendation = false;
-      
-      // 먼저 지정된 이름 검색
-      const namedProp = props['Recommendation'] || props['Recommended'] || props['추천'];
-      if (namedProp && namedProp.type === 'checkbox') {
-        recommendation = namedProp.checkbox ?? false;
+
+      // 키값을 못 찾을 가능성에 대비해 대소문자 무시 검색
+      const recKey = Object.keys(props).find(
+        (key) => key.trim().toLowerCase() === 'recommendation'
+      );
+
+      if (recKey && props[recKey]) {
+        const prop = props[recKey];
+        if (prop.type === 'checkbox') {
+          recommendation = prop.checkbox ?? false;
+        } else if (prop.type === 'formula') {
+          recommendation = prop.formula?.boolean ?? false;
+        }
       } else {
-        // 이름이 빈칸이거나 일치하는 게 없으면 properties 전체 중 첫 번째 checkbox 타입 탐색
-        const checkboxKey = Object.keys(props).find(
+        // 만약 키 검색 실패 시 첫 번째 체크박스 속성 가져오기
+        const fallbackCheckboxKey = Object.keys(props).find(
           (key) => props[key]?.type === 'checkbox'
         );
-        if (checkboxKey) {
-          recommendation = props[checkboxKey].checkbox ?? false;
+        if (fallbackCheckboxKey) {
+          recommendation = props[fallbackCheckboxKey].checkbox ?? false;
         }
       }
 

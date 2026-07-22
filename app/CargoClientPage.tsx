@@ -327,8 +327,8 @@ export default function CargoClientPage({
                         rel="noreferrer"
                         className="font-title font-medium text-2xl tracking-[0em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2.5"
                       >
-                        {/* Recommendation 체크되어 있을 시 초록 원형 배지 표시 */}
-                        {Boolean(agency.recommendation) && (
+                        {/* Recommendation 체크박스가 true일 때 확실한 초록 도트 표시 */}
+                        {agency.recommendation === true && (
                           <span 
                             className="inline-block w-2.5 h-2.5 rounded-full bg-[#0c9f5a] shrink-0" 
                             title="Recommended Agency"
