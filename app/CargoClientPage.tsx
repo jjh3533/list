@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 
 export interface Agency {
   id: string;
@@ -19,6 +19,56 @@ export default function CargoClientPage({
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [hoveredAgencyUrl, setHoveredAgencyUrl] = useState<string | null>(null);
+
+  // 헤더 상태 관리 (스크롤에 따른 높이 변화)
+  const [headerHeight, setHeaderHeight] = useState<number>(120);
+  const [barStyle, setBarStyle] = useState<React.CSSProperties>({});
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLAnchorElement>(null);
+
+  // 스크롤 및 리사이즈 이벤트 처리
+  useEffect(() => {
+    const handleScroll = () => {
+      // 100px 이상 스크롤 시 높이 80px로 축소
+      const newHeight = window.scrollY > 100 ? 80 : 120;
+      setHeaderHeight(newHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', updateBarPosition);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', updateBarPosition);
+    };
+  }, [headerHeight]);
+
+  // 상단 Accent Bar 위치 및 너비 업데이트
+  const updateBarPosition = () => {
+    const header = headerRef.current;
+    const logo = logoRef.current;
+
+    if (header && logo) {
+      const headerRect = header.getBoundingClientRect();
+      const logoRect = logo.getBoundingClientRect();
+      const extraWidth = headerHeight === 80 ? 75 : 0;
+
+      setBarStyle({
+        left: logoRect.left - headerRect.left,
+        width: logoRect.width + extraWidth,
+        height: '10px',
+        background: '#0c9f5a',
+        position: 'absolute',
+        top: 0,
+        transition: 'all 0.3s ease',
+      });
+    }
+  };
+
+  useEffect(() => {
+    updateBarPosition();
+  }, [headerHeight]);
 
   const categories = useMemo(() => {
     const all = initialAgencies.flatMap((a) => a.category || []);
@@ -50,31 +100,50 @@ export default function CargoClientPage({
     });
   }, [initialAgencies, selectedCategory, selectedLocation, searchQuery]);
 
+  // 로고 애니메이션 변환 스타일
+  const jeonTransform =
+    headerHeight === 80
+      ? 'translateY(-36px) translateX(75px)'
+      : 'translateY(0) translateX(0)';
+
   return (
     <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
       
-      {/* 80px 글로벌 Top Bar */}
-      <nav className="w-full h-[80px] bg-black border-b border-[#202d32] px-6 sm:px-12 flex items-start justify-between pt-0 pb-3">
-        {/* https://jayjeon.com 이동 링크 */}
-        <a
-          href="https://jayjeon.com"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex flex-col items-start w-fit group cursor-pointer"
-        >
-          {/* 최상단 밀착 녹색 바 */}
-          <div className="h-[10px] w-full bg-[#0c9f5a] mb-2 transition-opacity group-hover:opacity-80" />
-          
-          {/* 36px JAY JEON 타이틀 (A와 Y 사이 커닝 조절) */}
-          <span className="font-title font-black text-[36px] text-white uppercase leading-none tracking-normal">
-            J<span>A</span><span className="-ml-[0.08em]">Y</span> JEON
-          </span>
-        </a>
-      </nav>
+      {/* 고정 동적 헤더 (Fixed Header) */}
+      <header
+        ref={headerRef}
+        style={{ height: `${headerHeight}px` }}
+        className="fixed top-0 left-0 right-0 bg-black px-10 flex flex-col justify-between items-start z-[1000] transition-[height] duration-300 ease-in-out border-b border-[#202d32]"
+      >
+        {/* 상단 슬라이딩 포인트 바 */}
+        <div className="w-full h-[10px] absolute top-0 left-0 right-0">
+          <div style={barStyle} />
+        </div>
+
+        {/* 로고 영역 */}
+        <div className="flex items-center w-full py-5">
+          <a
+            ref={logoRef}
+            href="https://jayjeon.com"
+            target="_blank"
+            rel="noreferrer"
+            className="brand-name text-white text-[36px] font-semibold tracking-normal flex flex-col leading-none cursor-pointer"
+          >
+            <span className="block">
+              JA<span className="-ml-[2px]">Y</span>
+            </span>
+            <span
+              style={{ transform: jeonTransform }}
+              className="block tracking-[1px] transition-transform duration-300 ease-in-out"
+            >
+              JEON
+            </span>
+          </a>
+        </div>
+      </header>
 
       {/* 메인 컨텐츠 영역 */}
-      <div className="max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
-        
+      <div className="pt-[140px] max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
         <main className="flex-1">
           <header className="mb-8 border-b border-[#202d32] pb-8">
             <h1 className="font-title font-black text-7xl sm:text-9xl tracking-[0em] mb-4 text-[#0c9f5a]">
@@ -173,7 +242,7 @@ export default function CargoClientPage({
         </main>
 
         <aside className="w-full lg:w-72 shrink-0">
-          <div className="lg:sticky lg:top-10 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
+          <div className="lg:sticky lg:top-36 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // CATEGORIES
@@ -218,7 +287,9 @@ export default function CargoClientPage({
               </div>
             </div>
 
-            {(selectedCategory !== 'ALL' || selectedLocation !== 'ALL' || searchQuery !== '') && (
+            {(selectedCategory !== 'ALL' ||
+              selectedLocation !== 'ALL' ||
+              searchQuery !== '') && (
               <button
                 onClick={() => {
                   setSelectedCategory('ALL');
