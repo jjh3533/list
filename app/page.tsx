@@ -38,11 +38,24 @@ async function getAgencies() {
   if (!databaseId) return [];
 
   try {
-    const response = await notion.databases.query({
-      database_id: databaseId.replace(/-/g, ''),
-    });
+    let results: any[] = [];
+    let hasMore = true;
+    let nextCursor: string | undefined = undefined;
 
-    return response.results
+    // 100개 제한을 넘어 전체 데이터를 가져올 때까지 반복 (Pagination)
+    while (hasMore) {
+      const response: any = await notion.databases.query({
+        database_id: databaseId.replace(/-/g, ''),
+        start_cursor: nextCursor,
+        page_size: 100,
+      });
+
+      results = [...results, ...response.results];
+      hasMore = response.has_more;
+      nextCursor = response.next_cursor ?? undefined;
+    }
+
+    return results
       .map((page: any) => {
         const props = page.properties;
         if (!props) return null;
@@ -60,7 +73,6 @@ async function getAgencies() {
 
         let url = rawUrl;
         if (rawUrl.startsWith('@')) {
-          // @username ➔ https://instagram.com/username 변환
           const handle = rawUrl.replace('@', '');
           url = `https://instagram.com/${handle}`;
         }
