@@ -8,7 +8,7 @@ export interface Agency {
   url: string;
   category: string[];
   location: string;
-  recommendation?: boolean; // Notion Recommendation 체크박스 속성
+  recommendation?: boolean;
 }
 
 type SortOption = 'default' | 'abc' | 'category' | 'location';
@@ -327,7 +327,6 @@ export default function CargoClientPage({
                         rel="noreferrer"
                         className="font-title font-medium text-2xl tracking-[0em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                       >
-                        {/* Recommendation 체크박스가 true일 경우 rgb(12 159 90) 불릿 표시 */}
                         {agency.recommendation && (
                           <span className="text-[#0c9f5a] text-xl font-bold select-none">
                             ⦁
