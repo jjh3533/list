@@ -108,11 +108,11 @@ export default function CargoClientPage({
   return (
     <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
       
-      {/* 고정 동적 헤더 (Fixed Header) */}
+      {/* 고정 동적 헤더 (모바일/태블릿에서는 hidden, 데스크톱 lg: 이상에서만 flex) */}
       <header
         ref={headerRef}
         style={{ height: `${headerHeight}px` }}
-        className="fixed top-0 left-0 right-0 bg-black px-10 flex flex-col justify-between items-start z-[1000] transition-[height] duration-300 ease-in-out border-b border-[#202d32]"
+        className="hidden lg:flex fixed top-0 left-0 right-0 bg-black px-10 flex-col justify-between items-start z-[1000] transition-[height] duration-300 ease-in-out border-b border-[#202d32]"
       >
         {/* 상단 슬라이딩 포인트 바 */}
         <div className="w-full h-[10px] absolute top-0 left-0 right-0">
@@ -141,8 +141,8 @@ export default function CargoClientPage({
         </div>
       </header>
 
-      {/* 메인 컨텐츠 영역 */}
-      <div className="pt-[140px] max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
+      {/* 메인 컨텐츠 영역 (모바일/태블릿은 pt-6, 데스크톱은 pt-[140px]) */}
+      <div className="pt-6 lg:pt-[140px] max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
         <main className="flex-1">
           <header className="mb-8 border-b border-[#202d32] pb-8">
             <h1 className="font-title font-black text-7xl sm:text-9xl tracking-[0em] mb-4 text-[#0c9f5a]">
