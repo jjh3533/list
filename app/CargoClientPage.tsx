@@ -43,14 +43,11 @@ export default function CargoClientPage({
     <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
       <div className="max-w-[1600px] mx-auto px-6 py-10 flex flex-col lg:flex-row gap-12">
         
-        {/* 메인 리스트 */}
         <main className="flex-1">
           <header className="mb-12 border-b border-[#202d32] pb-8">
-            {/* 1. 메인 타이틀: 900 서체 (font-black) 적용 */}
             <h1 className="font-title font-black text-6xl sm:text-8xl tracking-tighter uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
-            {/* 2. 타이틀 설명: 텍스트 2배 (text-2xl), 자간 0.1em (tracking-[0.1em]) 적용 */}
             <p className="font-title font-medium text-neutral-400 text-2xl tracking-[0.1em] max-w-2xl leading-relaxed">
               Archived index of curated agency partners.
             </p>
@@ -83,7 +80,6 @@ export default function CargoClientPage({
                       href={targetUrl}
                       target="_blank"
                       rel="noreferrer"
-                      {/* 3. 에이전시 이름: 크기 키움 (text-2xl), 자간 0.1em (tracking-[0.1em]) 적용 */}
                       className="font-title font-medium text-2xl tracking-[0.1em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                     >
                       {agency.name}
@@ -116,7 +112,6 @@ export default function CargoClientPage({
           </div>
         </main>
 
-        {/* 필터 사이드바 */}
         <aside className="w-full lg:w-72 shrink-0">
           <div className="lg:sticky lg:top-10 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
             <div>
@@ -178,7 +173,6 @@ export default function CargoClientPage({
         </aside>
       </div>
 
-      {/* Live Preview Hover Thumbnail */}
       {hoveredAgencyUrl && (
         <div className="hidden lg:block fixed bottom-8 right-8 w-80 h-52 z-50 rounded-xl overflow-hidden border border-neutral-700 shadow-2xl bg-[#202d32] pointer-events-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
