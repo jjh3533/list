@@ -52,13 +52,24 @@ export default function CargoClientPage({
 
   return (
     <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
-      <div className="max-w-[1600px] mx-auto px-6 py-10 flex flex-col lg:flex-row gap-12">
+      
+      {/* 1. 최상단 80px 글로벌 Top Bar */}
+      <nav className="w-full h-[80px] bg-black border-b border-[#202d32] px-6 sm:px-12 flex items-center justify-between">
+        <div className="flex flex-col justify-center">
+          {/* 그린 포인트 바 */}
+          <div className="h-1.5 w-16 bg-[#0c9f5a] mb-1.5" />
+          {/* 흰색 JAY JEON 로고 타이틀 */}
+          <span className="font-title font-black text-2xl text-white tracking-wider uppercase leading-none">
+            JAY JEON
+          </span>
+        </div>
+      </nav>
+
+      {/* 메인 컨텐츠 영역 */}
+      <div className="max-w-[1600px] mx-auto px-6 py-12 flex flex-col lg:flex-row gap-12">
         
         <main className="flex-1">
           <header className="mb-8 border-b border-[#202d32] pb-8">
-            {/* 상단 그린 포인트 바 (jayjeon.com 스타일) */}
-            <div className="h-2 w-32 bg-[#0c9f5a] mb-6 rounded-full" />
-            
             <h1 className="font-title font-black text-7xl sm:text-9xl tracking-[0em] mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
