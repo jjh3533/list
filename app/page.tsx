@@ -8,10 +8,13 @@ interface Agency {
   name: string;
   url: string;
   category: string[];
-  location: string; // 예: "KR / Seoul" 또는 "DE / Berlin"
+  location: string;
 }
 
-export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agency[] }) {
+// Next.js App Router Page 규격에 맞게 Props 수정
+export default function CargoStyleDirectory() {
+  // 실제 노션 API 연동 전/후 데이터 관리를 위한 State
+  const [agencies] = useState<Agency[]>([]); 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [hoveredAgencyUrl, setHoveredAgencyUrl] = useState<string | null>(null);
@@ -40,12 +43,10 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
 
   return (
     <div className="min-h-screen bg-[#111111] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
-      {/* 전체 컨테이너: 좌측 콘텐츠 + 우측 필터 사이드바 */}
       <div className="max-w-[1600px] mx-auto px-6 py-10 flex flex-col lg:flex-row gap-12">
         
         {/* ================= 좌측: 메인 리스트 영역 ================= */}
         <main className="flex-1">
-          {/* 헤더 */}
           <header className="mb-12 border-b border-neutral-800 pb-8">
             <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-4 text-white">
               A-LIST DIRECTORY
@@ -55,20 +56,17 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
             </p>
           </header>
 
-          {/* 에이전시 카운트 */}
           <div className="text-xs font-mono text-neutral-500 mb-4 flex justify-between">
             <span>INDEX ({filteredAgencies.length})</span>
             <span>LOCATION / CITY</span>
           </div>
 
-          {/* 에이전시 리스트 (Cargo 특유의 라인 텍스트 스타일) */}
           <div className="border-t border-neutral-800 divide-y divide-neutral-800/60">
             {filteredAgencies.map((agency) => {
-              const targetUrl = agency.url.startsWith('http')
+              const targetUrl = agency.url?.startsWith('http')
                 ? agency.url
                 : `https://${agency.url}`;
 
-              // Microlink API를 이용한 Live Thumbnail URL 자동 생성
               const thumbnailUrl = `https://api.microlink.io/?url=${encodeURIComponent(
                 targetUrl
               )}&screenshot=true&meta=false&embed=screenshot.url`;
@@ -80,7 +78,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
                   onMouseLeave={() => setHoveredAgencyUrl(null)}
                   className="group relative py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-neutral-900/40 px-2 transition-all duration-150"
                 >
-                  {/* 왼쪽: 에이전시 이름 & URL */}
                   <div className="flex-1 min-w-0">
                     <a
                       href={targetUrl}
@@ -98,7 +95,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
                     </div>
                   </div>
 
-                  {/* 가운데: 카테고리 태그 */}
                   <div className="flex flex-wrap gap-1.5 sm:justify-center">
                     {agency.category?.map((cat) => (
                       <span
@@ -110,7 +106,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
                     ))}
                   </div>
 
-                  {/* 오른쪽: 국가/도시 정보 */}
                   <div className="text-sm font-mono text-neutral-400 sm:text-right shrink-0">
                     {agency.location || 'GLOBAL'}
                   </div>
@@ -120,11 +115,9 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
           </div>
         </main>
 
-        {/* ================= 우측: 고정 필터 사이드바 (Cargo 스타일) ================= */}
+        {/* ================= 우측: 고정 필터 사이드바 ================= */}
         <aside className="w-full lg:w-72 shrink-0">
           <div className="lg:sticky lg:top-10 space-y-8 bg-neutral-900/30 p-6 rounded-2xl border border-neutral-800/80 backdrop-blur-sm">
-            
-            {/* 1. 카테고리 필터 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-neutral-800 pb-2">
                 // CATEGORIES
@@ -147,7 +140,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
               </div>
             </div>
 
-            {/* 2. 국가/도시 필터 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-neutral-800 pb-2">
                 // LOCATION
@@ -170,7 +162,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
               </div>
             </div>
 
-            {/* 필터 초기화 버튼 */}
             {(selectedCategory !== 'ALL' || selectedLocation !== 'ALL') && (
               <button
                 onClick={() => {
@@ -186,9 +177,8 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
         </aside>
       </div>
 
-      {/* ================= Live Thumbnail Hover Preview (마우스 올렸을 때 나타나는 실시간 썸네일) ================= */}
       {hoveredAgencyUrl && (
-        <div className="hidden lg:block fixed bottom-8 right-8 w-80 h-52 z-50 rounded-xl overflow-hidden border border-neutral-700 shadow-2xl bg-neutral-900 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+        <div className="hidden lg:block fixed bottom-8 right-8 w-80 h-52 z-50 rounded-xl overflow-hidden border border-neutral-700 shadow-2xl bg-neutral-900 pointer-events-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={hoveredAgencyUrl}
@@ -196,9 +186,6 @@ export default function CargoStyleDirectory({ agencies = [] }: { agencies: Agenc
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-mono text-neutral-300">
-            Live Preview
-          </div>
         </div>
       )}
     </div>
