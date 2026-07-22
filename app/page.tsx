@@ -5,7 +5,7 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN || process.env.NOTION_KEY,
 });
 
-// 2자리 국가 코드 ➔ 영문 국가명 매핑
+// 2자리 국가 코드가 들어올 경우를 대비한 맵핑 (풀네임일 경우 그대로 출력)
 const COUNTRY_MAP: Record<string, string> = {
   KR: 'South Korea',
   DE: 'Germany',
@@ -34,6 +34,16 @@ const COUNTRY_MAP: Record<string, string> = {
   VN: 'Vietnam',
 };
 
+// 어절의 첫 글자만 대문자로 변환해주는 헬퍼 함수 (e.g. "united states" -> "United States")
+function toTitleCase(str: string): string {
+  if (!str) return 'Global';
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 async function getAgencies() {
   const databaseId = process.env.NOTION_DATABASE_ID;
   if (!databaseId) return [];
@@ -43,7 +53,7 @@ async function getAgencies() {
     let hasMore = true;
     let nextCursor: string | null = null;
 
-    // 전체 데이터를 가져오는 Loop
+    // 전체 데이터를 가져오는 안전한 Loop
     while (hasMore) {
       const queryParams: any = {
         database_id: databaseId.replace(/-/g, ''),
@@ -91,7 +101,7 @@ async function getAgencies() {
           category = [props.Category.select.name];
         }
 
-        // 4. Location 추출 (Multi-select, Select, Text 지원)
+        // 4. Location 추출 (2자리 코드는 매핑, 풀네임은 Title Case 변환)
         let rawLocation = '';
         if (props.Location?.multi_select?.length > 0) {
           rawLocation = props.Location.multi_select[0].name;
@@ -101,10 +111,14 @@ async function getAgencies() {
           rawLocation = props.Location.rich_text[0].plain_text;
         }
 
-        rawLocation = rawLocation.trim().toUpperCase();
-        const location = COUNTRY_MAP[rawLocation] || rawLocation || 'Global';
+        rawLocation = rawLocation.trim();
+        const upperCode = rawLocation.toUpperCase();
 
-        // 5. Recommendation (추천) 체크박스 추출 [추가된 핵심!]
+        // 2자리 코드면 COUNTRY_MAP에서 찾고, 풀네임이면 첫 글자만 대문자로 변환
+        const location =
+          COUNTRY_MAP[upperCode] || toTitleCase(rawLocation) || 'Global';
+
+        // 5. Recommendation (추천) 체크박스 추출
         let recommendation = false;
         const recKey = Object.keys(props).find(
           (key) => key.trim().toLowerCase() === 'recommendation'
@@ -118,7 +132,6 @@ async function getAgencies() {
             recommendation = prop.formula?.boolean ?? false;
           }
         } else {
-          // 속성명을 못 찾을 경우 첫 번째 checkbox 속성 탐색
           const fallbackKey = Object.keys(props).find(
             (key) => props[key]?.type === 'checkbox'
           );
@@ -133,7 +146,7 @@ async function getAgencies() {
           url,
           category,
           location,
-          recommendation, // 반환 객체에 추가
+          recommendation,
         };
       })
       .filter(Boolean);
@@ -143,7 +156,7 @@ async function getAgencies() {
   }
 }
 
-// 즉시 반영을 위한 캐시 무효화 (0초)
+// 실시간 반영을 위한 캐시 무효화 (0초)
 export const revalidate = 0;
 
 export default async function Page() {
