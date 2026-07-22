@@ -40,23 +40,23 @@ export default function CargoClientPage({
   }, [initialAgencies, selectedCategory, selectedLocation]);
 
   return (
-    <div className="min-h-screen bg-[#111111] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#1e202d] text-[#e5e5e5] font-sans selection:bg-white selection:text-black">
       <div className="max-w-[1600px] mx-auto px-6 py-10 flex flex-col lg:flex-row gap-12">
         
         {/* 메인 리스트 */}
         <main className="flex-1">
           <header className="mb-12 border-b border-neutral-800 pb-8">
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-4 text-white">
-              A-LIST DIRECTORY
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-4 text-[#0c9f5a]">
+              Agency Directory
             </h1>
             <p className="text-neutral-400 text-sm max-w-xl font-mono leading-relaxed">
-              Archived index of curated agency partners. Hover or click to preview live site.
+              Archived index of curated agency partners.
             </p>
           </header>
 
           <div className="text-xs font-mono text-neutral-500 mb-4 flex justify-between">
             <span>INDEX ({filteredAgencies.length})</span>
-            <span>LOCATION / CITY</span>
+            <span>LOCATION</span>
           </div>
 
           <div className="border-t border-neutral-800 divide-y divide-neutral-800/60">
