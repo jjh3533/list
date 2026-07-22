@@ -45,7 +45,7 @@ export default function CargoClientPage({
         
         {/* 메인 리스트 */}
         <main className="flex-1">
-          <header className="mb-12 border-b border-neutral-800 pb-8">
+          <header className="mb-12 border-b border-[#202d32] pb-8">
             <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
@@ -59,7 +59,7 @@ export default function CargoClientPage({
             <span>LOCATION</span>
           </div>
 
-          <div className="border-t border-neutral-800 divide-y divide-neutral-800/60">
+          <div className="border-t border-[#202d32] divide-y divide-[#202d32]/60">
             {filteredAgencies.map((agency) => {
               const targetUrl = agency.url?.startsWith('http')
                 ? agency.url
@@ -74,14 +74,14 @@ export default function CargoClientPage({
                   key={agency.id}
                   onMouseEnter={() => setHoveredAgencyUrl(thumbnailUrl)}
                   onMouseLeave={() => setHoveredAgencyUrl(null)}
-                  className="group relative py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-neutral-900/40 px-2 transition-all duration-150"
+                  className="group relative py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#202d32]/40 px-2 transition-all duration-150"
                 >
                   <div className="flex-1 min-w-0">
                     <a
                       href={targetUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors inline-flex items-center gap-2"
+                      className="text-xl font-bold text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                     >
                       {agency.name}
                       <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity font-normal">
@@ -97,7 +97,7 @@ export default function CargoClientPage({
                     {agency.category?.map((cat) => (
                       <span
                         key={cat}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#202d32] text-neutral-300"
                       >
                         {cat}
                       </span>
@@ -115,9 +115,9 @@ export default function CargoClientPage({
 
         {/* 필터 사이드바 */}
         <aside className="w-full lg:w-72 shrink-0">
-          <div className="lg:sticky lg:top-10 space-y-8 bg-neutral-900/30 p-6 rounded-2xl border border-neutral-800/80 backdrop-blur-sm">
+          <div className="lg:sticky lg:top-10 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
             <div>
-              <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-neutral-800 pb-2">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // CATEGORIES
               </h3>
               <div className="flex flex-col gap-1">
@@ -128,7 +128,7 @@ export default function CargoClientPage({
                     className={`text-left text-xs font-mono py-1.5 px-3 rounded-lg transition-all flex justify-between items-center ${
                       selectedCategory === cat
                         ? 'bg-white text-black font-bold'
-                        : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
+                        : 'text-neutral-400 hover:text-white hover:bg-[#202d32]/50'
                     }`}
                   >
                     <span>{cat}</span>
@@ -139,7 +139,7 @@ export default function CargoClientPage({
             </div>
 
             <div>
-              <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-neutral-800 pb-2">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // LOCATION
               </h3>
               <div className="flex flex-col gap-1">
@@ -149,8 +149,8 @@ export default function CargoClientPage({
                     onClick={() => setSelectedLocation(loc)}
                     className={`text-left text-xs font-mono py-1.5 px-3 rounded-lg transition-all flex justify-between items-center ${
                       selectedLocation === loc
-                        ? 'bg-emerald-400 text-black font-bold'
-                        : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
+                        ? 'bg-[#0c9f5a] text-white font-bold'
+                        : 'text-neutral-400 hover:text-white hover:bg-[#202d32]/50'
                     }`}
                   >
                     <span>{loc}</span>
@@ -177,7 +177,7 @@ export default function CargoClientPage({
 
       {/* Live Preview Hover Thumbnail */}
       {hoveredAgencyUrl && (
-        <div className="hidden lg:block fixed bottom-8 right-8 w-80 h-52 z-50 rounded-xl overflow-hidden border border-neutral-700 shadow-2xl bg-neutral-900 pointer-events-none">
+        <div className="hidden lg:block fixed bottom-8 right-8 w-80 h-52 z-50 rounded-xl overflow-hidden border border-neutral-700 shadow-2xl bg-[#202d32] pointer-events-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={hoveredAgencyUrl}
