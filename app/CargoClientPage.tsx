@@ -10,7 +10,6 @@ export interface Agency {
   location: string;
 }
 
-// LOCATION 정렬 옵션 추가
 type SortOption = 'default' | 'abc' | 'category' | 'location';
 
 export default function CargoClientPage({
@@ -21,7 +20,7 @@ export default function CargoClientPage({
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<SortOption>('default'); // 정렬 상태
+  const [sortBy, setSortBy] = useState<SortOption>('default');
   
   // 사이드바 더보기 상태
   const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
@@ -76,39 +75,47 @@ export default function CargoClientPage({
     updateBarPosition();
   }, [headerHeight]);
 
-  // 1. 사이드바 카테고리: 에이전시 수량이 많은 순서대로 내림차순 정렬 (알파벳순 X)
-  const categoriesWithCount = useMemo(() => {
+  // 카테고리별 전체 빈도수 계산
+  const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
       a.category?.forEach((cat) => {
         counts[cat] = (counts[cat] || 0) + 1;
       });
     });
-
-    const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 수량 내림차순 정렬
-      .map(([name, count]) => ({ name, count }));
-
-    return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
+    return counts;
   }, [initialAgencies]);
 
-  // 2. 사이드바 Location: 에이전시 수량이 많은 순서대로 내림차순 정렬 (알파벳순 X)
-  const locationsWithCount = useMemo(() => {
+  // 도시/국가별 전체 빈도수 계산
+  const locationCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
       if (a.location) {
         counts[a.location] = (counts[a.location] || 0) + 1;
       }
     });
+    return counts;
+  }, [initialAgencies]);
 
-    const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 수량 내림차순 정렬
+  // 사이드바 카테고리 리스트 (수량 내림차순)
+  const categoriesWithCount = useMemo(() => {
+    const sortedList = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({ name, count }));
 
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
-  }, [initialAgencies]);
+  }, [categoryCounts, initialAgencies.length]);
 
-  // 상위 10개 추출 (ALL 포함 11개)
+  // 사이드바 Location 리스트 (수량 내림차순)
+  const locationsWithCount = useMemo(() => {
+    const sortedList = Object.entries(locationCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count }));
+
+    return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
+  }, [locationCounts, initialAgencies.length]);
+
+  // 상위 10개 추출
   const visibleCategories = useMemo(() => {
     if (showAllCategories) return categoriesWithCount;
     return categoriesWithCount.slice(0, 11);
@@ -119,10 +126,11 @@ export default function CargoClientPage({
     return locationsWithCount.slice(0, 11);
   }, [locationsWithCount, showAllLocations]);
 
-  // 메인 리스트 필터링 및 정렬 처리
+  // 메인 리스트 필터링 및 수량 기준 정렬 처리
   const filteredAgencies = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
+    // 1. 검색 및 카테고리/위치 필터링
     const result = initialAgencies.filter((agency) => {
       const matchCat =
         selectedCategory === 'ALL' || agency.category?.includes(selectedCategory);
@@ -139,24 +147,41 @@ export default function CargoClientPage({
       return matchCat && matchLoc && matchSearch;
     });
 
-    // Sort 옵션별 정렬
+    // 2. Sort 옵션별 정렬
     return result.sort((a, b) => {
       if (sortBy === 'abc') {
         return a.name.localeCompare(b.name);
       }
+      
+      // TYPE (카테고리순): 해당 카테고리가 등록된 총 에이전시 수가 많은 순서대로 정렬
       if (sortBy === 'category') {
         const catA = a.category?.[0] || '';
         const catB = b.category?.[0] || '';
-        return catA.localeCompare(catB);
+        const countA = categoryCounts[catA] || 0;
+        const countB = categoryCounts[catB] || 0;
+        
+        if (countB !== countA) {
+          return countB - countA; // 많은 카테고리 우선
+        }
+        return catA.localeCompare(catB); // 카운트 같을 시 알파벳순
       }
+
+      // LOCATION (지역순): 해당 지역/국가가 등록된 총 에이전시 수가 많은 순서대로 정렬
       if (sortBy === 'location') {
         const locA = a.location || '';
         const locB = b.location || '';
-        return locA.localeCompare(locB);
+        const countA = locationCounts[locA] || 0;
+        const countB = locationCounts[locB] || 0;
+
+        if (countB !== countA) {
+          return countB - countA; // 많은 나라/도시 우선
+        }
+        return locA.localeCompare(locB); // 카운트 같을 시 알파벳순
       }
+
       return 0; // NEWEST (기본 등록순)
     });
-  }, [initialAgencies, selectedCategory, selectedLocation, searchQuery, sortBy]);
+  }, [initialAgencies, selectedCategory, selectedLocation, searchQuery, sortBy, categoryCounts, locationCounts]);
 
   const jeonTransform =
     headerHeight === 80
@@ -231,7 +256,7 @@ export default function CargoClientPage({
             )}
           </div>
 
-          {/* INDEX 수량 및 영문 정렬 필터 (NEWEST, NAME, TYPE, LOCATION) */}
+          {/* INDEX 수량 및 영문 정렬 필터 */}
           <div className="text-xs font-mono text-neutral-500 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span>INDEX ({filteredAgencies.length})</span>
             
@@ -344,7 +369,7 @@ export default function CargoClientPage({
         <aside className="w-full lg:w-80 shrink-0">
           <div className="lg:sticky lg:top-36 space-y-8 bg-[#202d32]/30 p-6 rounded-2xl border border-[#202d32]/80 backdrop-blur-sm">
             
-            {/* 1. 카테고리 필터 (많은 수 순서 정렬) */}
+            {/* 1. 카테고리 필터 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // CATEGORIES
@@ -378,7 +403,7 @@ export default function CargoClientPage({
               )}
             </div>
 
-            {/* 2. 국가/도시 필터 (Location, 많은 수 순서 정렬) */}
+            {/* 2. 국가/도시 필터 */}
             <div>
               <h3 className="text-xs font-mono uppercase tracking-widest text-neutral-400 mb-4 font-bold border-b border-[#202d32] pb-2">
                 // LOCATION
