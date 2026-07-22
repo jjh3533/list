@@ -1,20 +1,12 @@
+import localFont from 'next/font/local';
 import './globals.css';
 
 export const metadata = {
-  title: 'A-LIST Agency Directory',
+  title: 'Agency Directory',
   description: 'Internal Partner Database for Agencies',
 };
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="ko">
-      <body className="antialiased bg-neutral-950 text-neutral-100">
-        {children}
-      </body>
-    </html>
-  );
-}
-
+// localFont 선언
 const polymath = localFont({
   src: [
     {
@@ -33,15 +25,16 @@ const polymath = localFont({
       style: 'normal',
     },
   ],
-  variable: '--font-polymath', // CSS 변수로 사용할 이름
+  variable: '--font-polymath',
   display: 'swap',
 });
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      {/* 2. body 태그에 폰트 변수 클래스 적용 */}
-      <body className={polymath.variable}>{children}</body>
+      <body className={`${polymath.variable} antialiased bg-neutral-950 text-neutral-100`}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -46,11 +46,9 @@ export default function CargoClientPage({
         {/* 메인 리스트 */}
         <main className="flex-1">
           <header className="mb-12 border-b border-[#202d32] pb-8">
-            {/* 1. 타이틀에 Polymath 폰트 및 font-medium(500) 적용 */}
             <h1 className="font-title font-medium text-6xl sm:text-8xl tracking-tighter uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
-            {/* 2. 설명 문구에 Polymath 폰트 및 font-medium(500) 적용 */}
             <p className="font-title font-medium text-neutral-400 text-sm max-w-xl leading-relaxed">
               Archived index of curated agency partners.
             </p>
@@ -83,7 +81,6 @@ export default function CargoClientPage({
                       href={targetUrl}
                       target="_blank"
                       rel="noreferrer"
-                      {/* 3. 에이전시 이름에 Polymath 폰트 및 font-medium(500) 적용 */}
                       className="font-title font-medium text-xl text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                     >
                       {agency.name}
