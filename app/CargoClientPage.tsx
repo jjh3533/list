@@ -17,7 +17,7 @@ export default function CargoClientPage({
 }) {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
-  const [searchQuery, setSearchQuery] = useState<string>(''); // 검색어 상태 추가
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [hoveredAgencyUrl, setHoveredAgencyUrl] = useState<string | null>(null);
 
   const categories = useMemo(() => {
@@ -30,7 +30,6 @@ export default function CargoClientPage({
     return ['ALL', ...Array.from(new Set(all))];
   }, [initialAgencies]);
 
-  // 검색어 + 카테고리 + 로케이션 통합 필터링
   const filteredAgencies = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -40,7 +39,6 @@ export default function CargoClientPage({
       const matchLoc =
         selectedLocation === 'ALL' || agency.location === selectedLocation;
 
-      // 이름, URL, 카테고리, 로케이션 중 하나라도 검색어가 포함되면 매칭
       const matchSearch =
         !query ||
         agency.name.toLowerCase().includes(query) ||
@@ -58,6 +56,9 @@ export default function CargoClientPage({
         
         <main className="flex-1">
           <header className="mb-8 border-b border-[#202d32] pb-8">
+            {/* 상단 그린 포인트 바 (jayjeon.com 스타일) */}
+            <div className="h-2 w-32 bg-[#0c9f5a] mb-6 rounded-full" />
+            
             <h1 className="font-title font-black text-7xl sm:text-9xl tracking-[0em] mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
@@ -66,7 +67,7 @@ export default function CargoClientPage({
             </p>
           </header>
 
-          {/* 검색창 컴포넌트 */}
+          {/* 검색창 */}
           <div className="relative mb-8">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-500 font-mono text-sm">
               🔍
