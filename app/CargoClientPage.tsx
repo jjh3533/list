@@ -10,7 +10,8 @@ export interface Agency {
   location: string;
 }
 
-type SortOption = 'default' | 'abc' | 'category';
+// LOCATION 정렬 옵션 추가
+type SortOption = 'default' | 'abc' | 'category' | 'location';
 
 export default function CargoClientPage({
   initialAgencies = [],
@@ -20,9 +21,9 @@ export default function CargoClientPage({
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLocation, setSelectedLocation] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [sortBy, setSortBy] = useState<SortOption>('default'); // 정렬 상태
   
-  // 더보기 버튼 상태 관리
+  // 사이드바 더보기 상태
   const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
   const [showAllLocations, setShowAllLocations] = useState<boolean>(false);
 
@@ -75,7 +76,7 @@ export default function CargoClientPage({
     updateBarPosition();
   }, [headerHeight]);
 
-  // 1. 카테고리별 수량 및 내림차순 정렬 (많은 카테고리 우선)
+  // 1. 사이드바 카테고리: 에이전시 수량이 많은 순서대로 내림차순 정렬 (알파벳순 X)
   const categoriesWithCount = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
@@ -85,13 +86,13 @@ export default function CargoClientPage({
     });
 
     const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 수량이 많은 순서대로 내림차순
+      .sort((a, b) => b[1] - a[1]) // 수량 내림차순 정렬
       .map(([name, count]) => ({ name, count }));
 
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
-  // 2. 국가/도시(Location)별 수량 및 내림차순 정렬 (많은 국가 우선)
+  // 2. 사이드바 Location: 에이전시 수량이 많은 순서대로 내림차순 정렬 (알파벳순 X)
   const locationsWithCount = useMemo(() => {
     const counts: Record<string, number> = {};
     initialAgencies.forEach((a) => {
@@ -101,13 +102,13 @@ export default function CargoClientPage({
     });
 
     const sortedList = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1]) // 수량이 많은 순서대로 내림차순
+      .sort((a, b) => b[1] - a[1]) // 수량 내림차순 정렬
       .map(([name, count]) => ({ name, count }));
 
     return [{ name: 'ALL', count: initialAgencies.length }, ...sortedList];
   }, [initialAgencies]);
 
-  // 상위 10개 및 더보기 슬라이스
+  // 상위 10개 추출 (ALL 포함 11개)
   const visibleCategories = useMemo(() => {
     if (showAllCategories) return categoriesWithCount;
     return categoriesWithCount.slice(0, 11);
@@ -118,7 +119,7 @@ export default function CargoClientPage({
     return locationsWithCount.slice(0, 11);
   }, [locationsWithCount, showAllLocations]);
 
-  // 필터링 및 정렬 처리
+  // 메인 리스트 필터링 및 정렬 처리
   const filteredAgencies = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -138,6 +139,7 @@ export default function CargoClientPage({
       return matchCat && matchLoc && matchSearch;
     });
 
+    // Sort 옵션별 정렬
     return result.sort((a, b) => {
       if (sortBy === 'abc') {
         return a.name.localeCompare(b.name);
@@ -146,6 +148,11 @@ export default function CargoClientPage({
         const catA = a.category?.[0] || '';
         const catB = b.category?.[0] || '';
         return catA.localeCompare(catB);
+      }
+      if (sortBy === 'location') {
+        const locA = a.location || '';
+        const locB = b.location || '';
+        return locA.localeCompare(locB);
       }
       return 0; // NEWEST (기본 등록순)
     });
@@ -224,11 +231,11 @@ export default function CargoClientPage({
             )}
           </div>
 
-          {/* INDEX 수량 및 영문 정렬 필터 (NEWEST, NAME, TYPE) */}
+          {/* INDEX 수량 및 영문 정렬 필터 (NEWEST, NAME, TYPE, LOCATION) */}
           <div className="text-xs font-mono text-neutral-500 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span>INDEX ({filteredAgencies.length})</span>
             
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-neutral-600 mr-1 uppercase">SORT:</span>
               <button
                 onClick={() => setSortBy('default')}
@@ -259,6 +266,16 @@ export default function CargoClientPage({
                 }`}
               >
                 TYPE
+              </button>
+              <button
+                onClick={() => setSortBy('location')}
+                className={`px-2.5 py-1 rounded transition-colors uppercase ${
+                  sortBy === 'location'
+                    ? 'bg-[#0c9f5a] text-white font-bold'
+                    : 'bg-[#202d32]/50 text-neutral-400 hover:text-white'
+                }`}
+              >
+                LOCATION
               </button>
             </div>
           </div>
