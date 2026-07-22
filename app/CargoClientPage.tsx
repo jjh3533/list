@@ -45,10 +45,10 @@ export default function CargoClientPage({
         
         <main className="flex-1">
           <header className="mb-12 border-b border-[#202d32] pb-8">
-            <h1 className="font-title font-black text-6xl sm:text-8xl tracking-tighter uppercase mb-4 text-[#0c9f5a]">
+            <h1 className="font-title font-black text-6xl sm:text-8xl tracking-[0.05em] uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
-            <p className="font-title font-medium text-neutral-400 text-2xl tracking-[0.1em] max-w-2xl leading-relaxed">
+            <p className="font-title font-medium text-neutral-400 text-2xl tracking-[0.05em] max-w-2xl leading-relaxed">
               Archived index of curated agency partners.
             </p>
           </header>
@@ -80,7 +80,7 @@ export default function CargoClientPage({
                       href={targetUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-title font-medium text-2xl tracking-[0.1em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
+                      className="font-title font-medium text-2xl tracking-[0.05em] text-white group-hover:text-[#0c9f5a] transition-colors inline-flex items-center gap-2"
                     >
                       {agency.name}
                       <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity font-normal">
