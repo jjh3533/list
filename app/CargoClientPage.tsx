@@ -55,16 +55,21 @@ export default function CargoClientPage({
       
       {/* 80px 글로벌 Top Bar */}
       <nav className="w-full h-[80px] bg-black border-b border-[#202d32] px-6 sm:px-12 flex items-start justify-between pt-0 pb-3">
-        {/* w-fit 및 inline-block 구조로 포인트 바의 폭을 글자 폭과 1:1로 맞춤 */}
-        <div className="inline-flex flex-col items-start w-fit">
-          {/* 최상단 밀착 녹색 바: 높이 10px, 폭은 글자 폭과 동일 */}
-          <div className="h-[10px] w-full bg-[#0c9f5a] mb-2" />
+        {/* https://jayjeon.com 이동 링크 */}
+        <a
+          href="https://jayjeon.com"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex flex-col items-start w-fit group cursor-pointer"
+        >
+          {/* 최상단 밀착 녹색 바 */}
+          <div className="h-[10px] w-full bg-[#0c9f5a] mb-2 transition-opacity group-hover:opacity-80" />
           
-          {/* 36px JAY JEON 타이틀 */}
-          <span className="font-title font-black text-[36px] text-white tracking-wider uppercase leading-none">
-            JAY JEON
+          {/* 36px JAY JEON 타이틀 (A와 Y 사이 커닝 조절) */}
+          <span className="font-title font-black text-[36px] text-white uppercase leading-none tracking-normal">
+            J<span>A</span><span className="-ml-[0.08em]">Y</span> JEON
           </span>
-        </div>
+        </a>
       </nav>
 
       {/* 메인 컨텐츠 영역 */}
