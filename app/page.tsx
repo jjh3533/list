@@ -51,11 +51,19 @@ async function getAgencies() {
         const nameTitle = props.Agency?.title || props.Name?.title || [];
         const name = nameTitle[0]?.plain_text || 'Untitled';
 
-        // 2. URL 추출
-        const url =
+        // 2. URL 추출 및 @ 인스타그램 처리
+        let rawUrl = (
           props.URL?.url ||
           props.URL?.rich_text?.[0]?.plain_text ||
-          '';
+          ''
+        ).trim();
+
+        let url = rawUrl;
+        if (rawUrl.startsWith('@')) {
+          // @username ➔ https://instagram.com/username 변환
+          const handle = rawUrl.replace('@', '');
+          url = `https://instagram.com/${handle}`;
+        }
 
         // 3. Category 추출
         let category: string[] = [];
@@ -65,25 +73,17 @@ async function getAgencies() {
           category = [props.Category.select.name];
         }
 
-        // 4. Location 추출 (Multi-select, Select, Text 모두 지원)
+        // 4. Location 추출 (Multi-select, Select, Text 지원)
         let rawLocation = '';
-        
-        // Multi-select 타입인 경우 (보라색 태그 형태)
         if (props.Location?.multi_select?.length > 0) {
           rawLocation = props.Location.multi_select[0].name;
-        } 
-        // Select 타입인 경우
-        else if (props.Location?.select?.name) {
+        } else if (props.Location?.select?.name) {
           rawLocation = props.Location.select.name;
-        } 
-        // Text/Rich_text 타입인 경우
-        else if (props.Location?.rich_text?.[0]?.plain_text) {
+        } else if (props.Location?.rich_text?.[0]?.plain_text) {
           rawLocation = props.Location.rich_text[0].plain_text;
         }
 
         rawLocation = rawLocation.trim().toUpperCase();
-
-        // 매핑표에 매칭되면 국가명으로 변환, 없으면 원본값 (빈값일 시 'Global')
         const location = COUNTRY_MAP[rawLocation] || rawLocation || 'Global';
 
         return {
