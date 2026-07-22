@@ -5,7 +5,7 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN || process.env.NOTION_KEY,
 });
 
-// 2자리 국가 코드(ISO 3166-1 alpha-2) ➔ 국가명 매핑
+// 2자리 국가 코드 ➔ 영문 국가명 매핑
 const COUNTRY_MAP: Record<string, string> = {
   KR: 'South Korea',
   DE: 'Germany',
@@ -14,9 +14,9 @@ const COUNTRY_MAP: Record<string, string> = {
   FR: 'France',
   JP: 'Japan',
   CN: 'China',
-  NL: 'Netherland',
+  NL: 'Netherlands',
   SE: 'Sweden',
-  CH: 'Swiss',
+  CH: 'Switzerland',
   IT: 'Italy',
   ES: 'Spain',
   AT: 'Austria',
@@ -27,7 +27,7 @@ const COUNTRY_MAP: Record<string, string> = {
   CA: 'Canada',
   AU: 'Australia',
   SG: 'Singapore',
-  HK: 'Hongkong',
+  HK: 'Hong Kong',
   TW: 'Taiwan',
   TH: 'Thailand',
   VN: 'Vietnam',
@@ -65,14 +65,25 @@ async function getAgencies() {
           category = [props.Category.select.name];
         }
 
-        // 4. Location (2자리 국가 코드를 국가명으로 변환)
-        const rawLocation = (
-          props.Location?.select?.name ||
-          props.Location?.rich_text?.[0]?.plain_text ||
-          ''
-        ).trim().toUpperCase();
+        // 4. Location 추출 (Multi-select, Select, Text 모두 지원)
+        let rawLocation = '';
+        
+        // Multi-select 타입인 경우 (보라색 태그 형태)
+        if (props.Location?.multi_select?.length > 0) {
+          rawLocation = props.Location.multi_select[0].name;
+        } 
+        // Select 타입인 경우
+        else if (props.Location?.select?.name) {
+          rawLocation = props.Location.select.name;
+        } 
+        // Text/Rich_text 타입인 경우
+        else if (props.Location?.rich_text?.[0]?.plain_text) {
+          rawLocation = props.Location.rich_text[0].plain_text;
+        }
 
-        // 매핑표에 있으면 국가명으로, 없으면 원본 표시 (없을 시 GLOBAL)
+        rawLocation = rawLocation.trim().toUpperCase();
+
+        // 매핑표에 매칭되면 국가명으로 변환, 없으면 원본값 (빈값일 시 'Global')
         const location = COUNTRY_MAP[rawLocation] || rawLocation || 'Global';
 
         return {
