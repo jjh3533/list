@@ -40,19 +40,24 @@ async function getAgencies() {
   try {
     let results: any[] = [];
     let hasMore = true;
-    let nextCursor: string | undefined = undefined;
+    let nextCursor: string | null = null;
 
-    // 100개 제한을 넘어 전체 데이터를 가져올 때까지 반복 (Pagination)
+    // 248개 이상의 전 데이터를 가져오는 안전한 Loop
     while (hasMore) {
-      const response: any = await notion.databases.query({
+      const queryParams: any = {
         database_id: databaseId.replace(/-/g, ''),
-        start_cursor: nextCursor,
         page_size: 100,
-      });
+      };
+
+      if (nextCursor) {
+        queryParams.start_cursor = nextCursor;
+      }
+
+      const response: any = await notion.databases.query(queryParams);
 
       results = [...results, ...response.results];
       hasMore = response.has_more;
-      nextCursor = response.next_cursor ?? undefined;
+      nextCursor = response.next_cursor;
     }
 
     return results
