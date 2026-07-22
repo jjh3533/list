@@ -46,7 +46,7 @@ export default function CargoClientPage({
         {/* 메인 리스트 */}
         <main className="flex-1">
           <header className="mb-12 border-b border-[#202d32] pb-8">
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tighter uppercase mb-4 text-[#0c9f5a]">
+            <h1 className="text-6xl sm:text-8xl font-black tracking-tighter uppercase mb-4 text-[#0c9f5a]">
               Agency Directory
             </h1>
             <p className="text-neutral-400 text-sm max-w-xl font-mono leading-relaxed">
