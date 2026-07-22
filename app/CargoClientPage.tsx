@@ -30,7 +30,6 @@ export default function CargoClientPage({
   // 스크롤 및 리사이즈 이벤트 처리
   useEffect(() => {
     const handleScroll = () => {
-      // 100px 이상 스크롤 시 높이 80px로 축소
       const newHeight = window.scrollY > 100 ? 80 : 120;
       setHeaderHeight(newHeight);
     };
@@ -120,14 +119,14 @@ export default function CargoClientPage({
           <div style={barStyle} />
         </div>
 
-        {/* 로고 영역 */}
+        {/* 로고 영역 (Polymath 900 서체 적용) */}
         <div className="flex items-center w-full py-5">
           <a
             ref={logoRef}
             href="https://jayjeon.com"
             target="_blank"
             rel="noreferrer"
-            className="brand-name text-white text-[36px] font-semibold tracking-normal flex flex-col leading-none cursor-pointer"
+            className="font-title font-black text-white text-[36px] tracking-normal flex flex-col leading-none cursor-pointer"
           >
             <span className="block">
               JA<span className="-ml-[2px]">Y</span>
